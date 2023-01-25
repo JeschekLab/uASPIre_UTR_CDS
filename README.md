@@ -1,11 +1,11 @@
 # uASPIre_UTR_CDS
 
-This repository contains the data of _**u**ltradeep **A**cquisition of **S**equence-**P**henotype **I**nter**re**lations_ (uASPIre) and the code for processing raw NGS data as presented in the manuscript "Ultradeep characterisation of translational sequence determinants refutes rare-codon hypothesis and unveils quadruplet base pairing of initiator tRNA and transcript".
+This repository contains the data of _**u**ltradeep **A**cquisition of **S**equence-**P**henotype **I**nter**re**lations_ (uASPIre) and the code for processing raw NGS data as presented in the manuscript "Ultradeep characterisation of translational sequence determinants refutes rare-codon hypothesis and unveils quadruplet base pairing of initiator tRNA and transcript" (https://doi.org/10.1093/nar/gkad040).
 
 
 ## Organization of the repository
 
-1. [**data**](data) contains the data required to reproduce all figures in the main text. Due to file size limitations, data is gzipped into multiple subfiles.
+1. [**data**](data) contains the data required to reproduce all figures in the main text. Due to file size limitations, data is gzipped into multiple subfiles. The data can also be found on zenodo via https://doi.org/10.5281/zenodo.7536586.
 
 
 ## Hardware requirements
