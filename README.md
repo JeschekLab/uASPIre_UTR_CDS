@@ -5,7 +5,7 @@ This repository contains the data of _**u**ltradeep **A**cquisition of **S**eque
 
 ## Organization of the repository
 
-1. [**data**](data) contains the data required to reproduce all figures in the main text.
+1. [**data**](data) contains the data required to reproduce all figures in the main text. Due to file size limitations, data is gzipped into multiple subfiles.
 
 
 ## Hardware requirements
@@ -25,10 +25,6 @@ This code requires the following UNIX tools and packages:
 
 + AGREP 3.41.5 (e.g. available via https://github.com/Wikinaut/agrep)
 + TRE agrep 0.8.0 (e.g. available via https://wiki.ubuntuusers.de/tre-agrep/)
-
-
-## Functionality
-"The algorithms for processing of NGS data for this project were written in bash and python. Briefly, forward and reverse reads retrieved from fastq files were paired and all reads with more than six consecutive unidentified nucleotides were removed. Afterwards, target fragments were selected by a 10-bp constant region (GAGCTCGCAT, max. 3 mismatches) and sequences from different samples were deconvoluted by their unique combination of two 6-bp indices (Supplementary Tab. 3). Next, the discriminator state was determined by searching for the presence of an attP or attR site corresponding to the sequences GGGTTTGTACCGTACAC or GCCCGGATGATCCTGAC, respectively (max. 3 mismatches). RBS sequences were determined by retrieving the 17 nucleotides upstream of the bxb1 start codon." (from Höllerer _et al_., 2020)
 
 
 ## License
