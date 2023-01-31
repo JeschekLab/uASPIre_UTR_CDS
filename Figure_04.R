@@ -11,7 +11,8 @@ library(h2o)
 
 # read data
 print('Reading data ...')
-data <- read.table('./data/data_combined.txt',
+data <- read.table(
+  file = './data/data_combined.txt',
   header = T,
   sep = '\t',
   colClasses = c(
@@ -225,7 +226,7 @@ p <- ggplot(data_plot, aes(x = lib, y = abs(value), fill = variable, color = var
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_04_B_violins.png', plot = p,
+ggsave('Fig_04_B_violins.pdf', plot = p,
   width = 3, height = 3, units = c('in'), scale = 1)
 
 
@@ -271,7 +272,7 @@ p <- ggplot(aov_combined, aes(x = effect, y = mean, fill = effect)) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_04_C_anova.png', plot = p,
+ggsave('Fig_04_C_anova.pdf', plot = p,
   width = 3, height = 3, units = c('in'), scale = 1)
 
 
@@ -321,7 +322,7 @@ p <- ggplot(data = df_corr_CAI, aes(y = explainability, x = lib, fill = stat)) +
   facet_wrap(~model)
 
 # save plot to file
-ggsave('Fig_04_D_CAI_tAI.png', plot = p,
+ggsave('Fig_04_D_CAI_tAI.pdf', plot = p,
   width = 3, height = 3, units = c('in'), scale = 1)
 
 
@@ -365,7 +366,7 @@ p <- ggplot(temp3, aes(x = label, y = value, fill = group, color = group)) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_04_E_CAI_efeC.png', plot = p,
+ggsave('Fig_04_E_CAI_efeC.pdf', plot = p,
   width = 4, height = 3, units = c('in'), scale = 1)
 
 t.test(CAI_10$rTR, CAI_90$rTR) # 0.213 vs. 0.217, 1.00e-12
@@ -407,7 +408,7 @@ p <- ggplot(data = temp_plot, aes(x = name, y = SOS_rel)) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_04_F_efeC_CAI_tAI.png', plot = p,
+ggsave('Fig_04_F_efeC_CAI_tAI.pdf', plot = p,
   width = 3, height = 3, units = c('in'), scale = 1)
 
 
@@ -532,5 +533,5 @@ p <- ggplot(df_cor_RF_combined, aes(x = name, y = mean, fill = name)) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_04_G_RF.png', plot = p,
+ggsave('Fig_04_G_RF.pdf', plot = p,
   width = 3, height = 3, units = c('in'), scale = 1)

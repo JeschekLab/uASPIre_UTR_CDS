@@ -10,7 +10,8 @@ library(ggseqlogo)
 
 # read data
 print('Reading data ...')
-data <- read.table('./data/data_combined.txt',
+data <- read.table(
+  file = './data/data_combined.txt',
   header = T,
   sep = '\t',
   colClasses = c(
@@ -96,8 +97,12 @@ p <- ggplot(data = SOS, aes(x = position, y = SS_rel)) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_02_A_anova.png', plot = p,
-  width = 10, height = 3, units = c('in'), scale = 0.8)
+ggsave(
+  plot = p,
+  file = 'Fig_02_A_anova.pdf',
+  width = 10,
+  height = 3,
+  scale = 0.8)
 
 
 
@@ -106,7 +111,7 @@ ggsave('Fig_02_A_anova.png', plot = p,
 
 # set library and make print statement
 current_library <- 1
-print(paste0('Figure 2 B: Single base effect of library ', current_library))
+print(paste0('Figure 2 B: single base effect of library ', current_library))
 
 # select data
 data_lib <- data %>%
@@ -163,8 +168,12 @@ p <- ggplot(data_plot, aes(x = position, y = base, fill = rTR)) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_02_B_base_effects.png', plot = p,
-  width = 10, height = 3, units = c('in'), scale = 0.8)
+ggsave(
+  plot = p,
+  file = 'Fig_02_B_base_effects.pdf',
+  width = 10,
+  height = 3,
+  scale = 0.8)
 
 
 
@@ -173,7 +182,7 @@ ggsave('Fig_02_B_base_effects.png', plot = p,
 
 # set library and make print statement
 current_library <- 1
-print(paste0('Figure 2 C: Enrichment of library ', current_library))
+print(paste0('Figure 2 C: enrichment of library ', current_library))
 
 # select data
 data_lib <- data %>%
@@ -242,5 +251,9 @@ p <- ggplot() +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_02_C_enrichment.png', plot = p,
-  width = 10, height = 3, units = c('in'), scale = 0.8)
+ggsave(
+  plot = p,
+  file = 'Fig_02_C_enrichment.pdf',
+  width = 10,
+  height = 3,
+  scale = 0.8)

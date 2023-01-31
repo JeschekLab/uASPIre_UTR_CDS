@@ -10,7 +10,8 @@ library(viridis)
 
 # read data
 print('Reading data ...')
-data <- read.table('./data/data_combined.txt',
+data <- read.table(
+  file = './data/data_combined.txt',
   header = T,
   sep = '\t',
   colClasses = c(
@@ -27,7 +28,7 @@ data <- read.table('./data/data_combined.txt',
 
 # set library and make print statement
 current_library <- 1
-print(paste0('Figure 3 E: Folding of library ', current_library))
+print(paste0('Figure 3 A: folding of library ', current_library))
 
 # select data
 data_lib <- data %>%
@@ -75,8 +76,11 @@ p <- ggplot(data = df_corr,
     clip = 'off')
 
 # save plot to file
-ggsave('Fig_03_A_folding.png', plot = p,
-  width = 3, height = 3, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  file = 'Fig_03_A_folding.pdf',
+  width = 3,
+  height = 3)
 
 
 
@@ -85,7 +89,7 @@ ggsave('Fig_03_A_folding.png', plot = p,
 
 # set library and make print statement
 current_library <- 1
-print(paste0('Figure 3 E: Scatter efeC of library ', current_library))
+print(paste0('Figure 3 B: scatter efeC of library ', current_library))
 
 # select data
 data_lib <- data %>%
@@ -116,8 +120,11 @@ p <- ggplot(data_lib, aes(x = efeC, y = rTR)) +
     clip = 'off')
 
 # save plot to file
-ggsave('Fig_03_B_efeC.png', plot = p,
-  width = 5, height = 5, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  file = 'Fig_03_B_efeC.pdf',
+  width = 5,
+  height = 5)
 
 
 
@@ -158,25 +165,34 @@ for (current_mode in c('accT', 'accC')) {
 }
 
 # correct position and add center
-df_corr_acc$pos_corrected <- df_corr_acc$pos - 28 + 4.5
+df_corr_acc <- df_corr_acc %>%
+  mutate(pos_corrected = pos - 28 + 4.5)
 
 # generate plot
-p <- ggplot(df_corr_acc, aes(x = pos_corrected, y = cor, color = mode)) +
+p <- ggplot(df_corr_acc, aes(x = pos_corrected, y = -cor, color = mode)) +
   geom_point(size = 2) +
-  geom_line(size = 1) +
+  geom_line(linewidth = 1) +
   theme_SH() +
-  scale_color_discrete(name = '') +
-  scale_x_continuous('center position of accessibility window',
+  scale_x_continuous(
+    name = 'center position of accessibility window',
     limits = c(-25, 50), 
     breaks = seq(-25, 50, 10),
     expand = c(0, 0)) +
-  scale_y_continuous('p (-)',
-    expand = c(0, 0), limits = c(0, -0.5), trans = 'reverse') +
+  scale_y_continuous(
+    name = 'p (-)',
+    expand = c(0, 0),
+    limits = c(0, 0.5)) +
+  scale_color_manual(
+    name = '',
+    values = c('grey90', 'grey30')) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_03_C_acc.png', plot = p,
-  width = 5, height = 3, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  file = 'Fig_03_C_acc.pdf',
+  width = 4,
+  height = 3)
 
 
 
@@ -185,45 +201,59 @@ ggsave('Fig_03_C_acc.png', plot = p,
 
 # set library and make print statement
 current_library <- 1
-print(paste0('Figure 3 E: Lineplot of library ', current_library))
+print(paste0('Figure 3 D: hybridisation of library ', current_library))
 
 # select data
 data_lib <- data %>% filter(lib == current_library)
 
 # read hybridization
-scanning_energy <- read.table(paste0('./data/data_hybridization.txt'),
+scanning_energy <- read.table(file = './data/data_hybridization.txt',
   sep = '\t', header = T, colClasses = 'numeric')
 
-n <- ncol(scanning_energy)
-
+# add rTR
 scanning_energy$rTR <- data_lib$rTR
 
+# initialize data frame
 scanning_correlation <- data.frame()
 
-for (i in 1:n) {
+# loop through all positions and calculate correlation
+for (i in 1:ncol(scanning_energy)) {
   print(paste0('Current substring: ', i))
   R <- cor(scanning_energy[, i], scanning_energy$rTR, method = 'pearson')
   p <- cor(scanning_energy[, i], scanning_energy$rTR, method = 'spearman')
-  df_temp <- data.frame(pos = i - 28, cor = c(R, p), stat = c('R', 'p'))
+  df_temp <- data.frame(
+    pos = i - 28,
+    cor = c(R, p),
+    stat = c('R', 'p'))
   scanning_correlation <- rbind(scanning_correlation, df_temp)
 }
 
 # generate plot
 p <- ggplot(scanning_correlation, aes(x = pos+4, y = cor, fill = stat)) +
-  geom_bar(position = 'dodge', stat = 'identity') +
+  geom_bar(
+    position = 'dodge',
+    stat = 'identity') +
   theme_SH() +
-  scale_x_continuous('center position of sliding window',
+  scale_x_continuous(
+    name = 'center position of sliding window',
     limits = c(-25, 5),
     breaks = seq(-25, 5, by = 5)) +
-  scale_y_reverse('p / R (-)',
+  scale_y_reverse(
+    name = 'p / R (-)',
     limits = c(0.2, -0.3),
     breaks = seq(0.2, -0.3, -0.1),
     expand = c(0, 0)) +
+  scale_fill_manual(
+    name = '',
+    values = c('grey30', 'grey90')) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_03_D_hyb.png', plot = p,
-  width = 3, height = 3, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  file = 'Fig_03_D_hyb.pdf',
+  width = 4,
+  height = 3)
 
 
 
@@ -232,12 +262,14 @@ ggsave('Fig_03_D_hyb.png', plot = p,
 
 # set library and make print statement
 current_library <- 1
-print(paste0('Figure 3 E: Lineplot of library ', current_library))
+print(paste0('Figure 3 E: feature importance of library ', current_library))
 
-# select data
-df_wider <- read.table('./data/data_accC_1.txt',
+# read accC data
+df_wider <- read.table(
+  file = './data/data_accC_1.txt',
   sep = '\t', header = T)
 
+# select lib random
 data_lib <- cbind(data, df_wider) %>%
   filter(lib == current_library) %>%
   select(seq, rTR, paste0('X', 1:80), hyb_opt,
@@ -258,11 +290,11 @@ for (i in 1:ncol(df_one_hot)) {
   class(df_one_hot[, i]) <- 'integer'
 }
 
-# combine
+# combine into one data frame
 df_RF <- cbind(data_lib, df_one_hot) %>%
   select(-seq, -onehot)
 
-# split
+# split randomly in test and train
 set.seed(12345)
 index <- createDataPartition(df_RF$rTR, p = 0.90, list = FALSE)
 
@@ -276,6 +308,7 @@ h2o.init()
 train.h2o <- as.h2o(train)
 test.h2o <- as.h2o(test)
 
+# set variable that will be predicted
 y.dep <- 'rTR'
 
 # overall model
@@ -287,6 +320,7 @@ rforest.model_cv <- h2o.randomForest(
   nfolds = 10
   )
 
+# predict
 test$predict <- as.data.frame(h2o.predict(rforest.model_cv, test.h2o))$predict
 
 # calculate correlation
@@ -294,20 +328,34 @@ cor(test$rTR, test$predict, method = 'pearson')^2
 
 # generate plot
 p <- ggplot(test, aes(x = rTR, y = predict)) +
-  geom_point(size = 0.3, alpha = 0.3) +
+  geom_point(
+    size = 0.3,
+    alpha = 0.3) +
   ggtitle(paste0(R_model)) +
-  scale_x_continuous('measured rTR',
-    limits = c(0, 1), expand = c(0, 0)) +
-  scale_y_continuous('predicted rTR', 
-    limits = c(0, 1), expand = c(0, 0)) +
-  geom_smooth(method = 'lm', se = T, fullrange = F) +
+  scale_x_continuous(
+    name = 'measured rTR',
+    limits = c(0, 1),
+    expand = c(0, 0)) +
+  scale_y_continuous(
+    name = 'predicted rTR', 
+    limits = c(0, 1),
+    expand = c(0, 0)) +
+  geom_smooth(
+    method = 'lm',
+    se = F,
+    fullrange = F) +
   theme_SH()
 
 # save plot to file
-ggsave('03_RF_scatter.png', plot = p,
-  width = 5, height = 5, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  file = 'Fig_03_E_RF_scatter.pdf',
+  width = 5,
+  height = 5)
+
 
 ### plot feature importance ###
+# extract feature importance
 varimp <- as.data.frame(h2o.varimp(rforest.model_cv))
 
 varimp$name <- NA
@@ -326,7 +374,10 @@ varimp <- varimp[!(varimp$variable %in% paste0('V', 1:160)), ]
 
 varimp_pos$ID <- as.integer(gsub('V', '', varimp_pos$variable))
 
-df_temp <- data.frame(base = BASES, ID = 1:160, pos = rep(c(-25:-1, seq(6, 48, 3)), each = 4))
+df_temp <- data.frame(
+  base = BASES,
+  ID = 1:160,
+  pos = rep(c(-25:-1, seq(6, 48, 3)), each = 4))
 
 varimp_pos <- merge(varimp_pos, df_temp, by = 'ID', all = F)
 
@@ -340,9 +391,12 @@ varimp$name <- varimp$variable %>%
   gsub('GC_all', 'GC-content', .)
 
 varimp_all <- rbind(
-  varimp %>% select(name, relative_importance, scaled_importance, percentage),
-  varimp_pos %>% select(name, relative_importance, scaled_importance, percentage),
-  varimp_acc %>% select(name, relative_importance, scaled_importance, percentage)
+  varimp %>%
+    select(name, relative_importance, scaled_importance, percentage),
+  varimp_pos %>%
+    select(name, relative_importance, scaled_importance, percentage),
+  varimp_acc %>%
+    select(name, relative_importance, scaled_importance, percentage)
   ) %>%
   arrange(desc(percentage)) %>%
   mutate(relative_importance = round(relative_importance, 0)) %>%
@@ -360,18 +414,29 @@ n <- 10
 labels <- head(varimp_all$Name, n)
 
 # generate plot
-p <- ggplot(data = head(varimp_all, n), aes(x = rev(Rank), y = Percentage * 100)) +
-  geom_bar(stat = 'identity', fill = 'black') +
-  scale_x_continuous('Ranked ', breaks =1:n, labels = rev(labels),
+p <- ggplot(
+  data = head(varimp_all, n), aes(x = rev(Rank), y = Percentage * 100)) +
+  geom_bar(
+    stat = 'identity',
+    fill = 'grey30') +
+  scale_x_continuous(
+    name = 'Ranked ',
+    breaks =1:n,
+    labels = rev(labels),
     expand = c(0, 0)) +
-  scale_y_continuous('RF feature importance (%)',
-    limits = c(0, 25), expand = c(0, 0)) +
+  scale_y_continuous(
+    name = 'rel. feature importance (%)',
+    limits = c(0, 25),
+    expand = c(0, 0)) +
   theme_SH() +
   coord_flip()
 
 # save plot to file
-ggsave('03_RF_features.png', plot = p,
-  width = 3, height = 3, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  file = '03_RF_features.pdf',
+  width = 3,
+  height = 3)
 
 
 
@@ -380,7 +445,7 @@ ggsave('03_RF_features.png', plot = p,
 
 # set library and make print statement
 current_library <- 1
-print(paste0('Figure 3 E: Lineplot of library ', current_library))
+print(paste0('Figure 3 F: efeC-hybopt of library ', current_library))
 
 # select data
 data_lib <- data %>%
@@ -410,22 +475,32 @@ data_lib$bin_hyb[data_lib$hyb_opt > 0] <- 6
 # calculate mean
 plot_data <- data_lib %>%
   group_by(bin_efeC, bin_hyb) %>%
-  summarize(mean = mean(rTR))
+  summarize(mean = mean(rTR)) %>%
+  ungroup()
 
 # generate plot
 p <- ggplot(plot_data, aes(x = bin_efeC, y = bin_hyb, fill = mean)) + 
   geom_tile() +
   theme_SH() +
-  scale_fill_viridis(name = 'rTR (-)',
-    option = 'turbo', limits = c(0, 1)) +
-  scale_x_continuous('efeC (kcal x mol-1)',
-    expand = c(0, 0), breaks = c(1:6),
+  scale_fill_viridis(
+    name = 'rTR (-)',
+    option = 'turbo',
+    limits = c(0, 1)) +
+  scale_x_continuous(
+    name = 'efeC (kcal x mol-1)',
+    expand = c(0, 0),
+    breaks = c(1:6),
     labels = c('<=-15', '>-15', '>-12.5', '>-10', '>-7.5', '>-5')) +
-  scale_y_continuous('hybopt (kcal x mol-1)',
-    expand = c(0, 0), breaks = c(1:6),
+  scale_y_continuous(
+    name = 'hybopt (kcal x mol-1)',
+    expand = c(0, 0),
+    breaks = c(1:6),
     labels = c('<=-10', '>-10', '>-7.5', '>-5', '>-2.5', '>0')) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_03_F_efeC_hyb.png', plot = p,
-  width = 4, height = 3, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  file = 'Fig_03_F_efeC_hyb.pdf',
+  width = 4,
+  height = 3)

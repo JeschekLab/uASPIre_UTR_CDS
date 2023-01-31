@@ -7,7 +7,8 @@ library(tidyverse)
 
 # read data
 print('Reading data ...')
-data <- read.table('./data/data_combined.txt',
+data <- read.table(
+  file = './data/data_combined.txt',
   header = T,
   sep = '\t',
   colClasses = c(
@@ -54,7 +55,7 @@ p <- ggplot(data_lib, aes(x = GG, y = rTR)) +
   theme_SH() +
   coord_cartesian(ylim = c(0.00, 1.1), clip = 'off')
 
-ggsave('Fig_05_A1_rTR.png', plot = p, width = 3, height = 6,
+ggsave('Fig_05_A1_rTR.pdf', plot = p, width = 3, height = 6,
   units = c('in'), scale = 1)
 
 # generate plot
@@ -68,7 +69,7 @@ p <- ggplot(data_lib, aes(x = GG, y = efeC)) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_05_A2_efeC.png', plot = p, width = 3, height = 3,
+ggsave('Fig_05_A2_efeC.pdf', plot = p, width = 3, height = 3,
   units = c('in'), scale = 1)
 
 # t-test for rTR and efeC
@@ -113,7 +114,7 @@ p <- ggplot(data_plot, aes(x = RSCU, y = mean, color = CDS6)) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_05_B_triplet.png', plot = p, width = 3, height = 3,
+ggsave('Fig_05_B_triplet.pdf', plot = p, width = 3, height = 3,
   units = c('in'), scale = 1)
 
 
@@ -146,7 +147,7 @@ p <- ggplot(data_lib, aes(x = UU, y = rTR)) +
   theme_SH() +
   coord_cartesian(ylim = c(0.00, 1.1))
 
-ggsave('Fig_05_C1_rTR.png', plot = p, width = 3, height = 6,
+ggsave('Fig_05_C1_rTR.pdf', plot = p, width = 3, height = 6,
   units = c('in'), scale = 1)
 
 # generate plot
@@ -159,7 +160,7 @@ p <- ggplot(data_lib, aes(x = UU, y = efeC)) +
   theme_SH()
 
 # save plot to file
-ggsave('Fig_05_C2_efeC.png', plot = p, width = 3, height = 3,
+ggsave('Fig_05_C2_efeC.pdf', plot = p, width = 3, height = 3,
   units = c('in'), scale = 1)
 
 # t-test for rTR and efeC
@@ -199,7 +200,7 @@ p <- ggplot(data_plot, aes(x = Plasmid, y = mean)) +
     expand = c(0, 0))
 
 # save plot to file
-ggsave('Fig_05_E_growth.png', plot = p,
+ggsave('Fig_05_E_growth.pdf', plot = p,
   width = 3, height = 3, units = c("in"), scale = 1)
 
 
@@ -265,7 +266,7 @@ p <- ggplot(df_tRNA, aes(x = tRNA, y = FC, fill = UTR)) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_05_G_positions.png', plot = p,
+ggsave('Fig_05_G_positions.pdf', plot = p,
   width = 6, height = 3, units = c('in'), scale = 1)
 
 

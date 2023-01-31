@@ -9,7 +9,8 @@ library(scales)
 
 # read data
 print('Reading data ...')
-data <- read.table('./data/data_combined.txt',
+data <- read.table(
+  file = './data/data_combined.txt',
   header = T,
   sep = '\t',
   colClasses = c(
@@ -30,7 +31,7 @@ N <- 1000 # lines for line plot
 
 # set library and make print statement
 current_library <- 1
-print(paste0('Figure 1 E: Lineplot of library ', current_library))
+print(paste0('Figure 1 E: lineplot of library ', current_library))
 
 # filter data and make subset
 data_lib <- data %>%
@@ -72,7 +73,11 @@ p <- ggplot(data_plot, aes(x = tp, y = fraction, group = seq)) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave(plot = p, file = 'Fig_01_E_lines.png', width = 3, height = 3)
+ggsave(
+  plot = p,
+  file = 'Fig_01_E_lines.pdf',
+  width = 3,
+  height = 3)
 
 
 
@@ -81,7 +86,7 @@ ggsave(plot = p, file = 'Fig_01_E_lines.png', width = 3, height = 3)
 
 # set library and make print statement
 current_library <- 1
-print(paste0('Figure 1 F: Heatmap of library ', current_library))
+print(paste0('Figure 1 F: heatmap of library ', current_library))
 
 # filter data and make subset
 data_lib <- data %>%
@@ -170,7 +175,11 @@ p <- ggplot(plot_data,
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave(plot = p, file = 'Fig_01_F_heatmap.png', width = 10, height = 10)
+ggsave(
+  plot = p,
+  file = 'Fig_01_F_heatmap.pdf',
+  width = 10,
+  height = 10)
 
 
 
@@ -225,8 +234,11 @@ p <- ggplot(df_GFP, aes(x = AUC/480, y = GFP)) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_01_H_IFP_GFP.png', plot = p,
-  width = 3, height = 3, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  file = 'Fig_01_H_IFP_GFP.pdf',
+  width = 3,
+  height = 3)
 
 
 
@@ -235,7 +247,7 @@ ggsave('Fig_01_H_IFP_GFP.png', plot = p,
 
 # set library and make print statement
 current_library <- 1
-print(paste0('Figure 1 I: Histogram of library ', current_library))
+print(paste0('Figure 1 I: histogram of library ', current_library))
 
 # select data
 data_lib <- data %>%
@@ -263,5 +275,8 @@ p <- ggplot(data_lib, aes(x = rTR)) +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_01_I_hist.png', plot = p, width = 3,
-  height = 3, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  file = 'Fig_01_I_hist.pdf',
+  width = 3,
+  height = 3)
