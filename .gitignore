@@ -1,0 +1,10 @@
+# ignore big data files
+data/data_accC_1.txt
+data/data_accC_10.txt
+data/data_accT_10.txt
+data/data_calibration_GFP.txt
+data/data_combined.txt
+data/data_hybridization.txt
+data/data_OD_tRNA.txt
+data/data_pools_lib_fact.txt
+data/data_tRNA_combined.txt

@@ -9,6 +9,7 @@ library(h2o)
 library(viridis)
 
 # read data
+print('Reading data ...')
 data <- read.table('./data/data_combined.txt',
   header = T,
   sep = '\t',
@@ -22,48 +23,58 @@ data <- read.table('./data/data_combined.txt',
 
 
 ############################# Fig. 3 A #############################
-### effect of folding ###
+### folding ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 3 E: Folding of library ', current_library))
+
+# select data
 data_lib <- data %>%
-  filter(lib == 1)
+  filter(lib == current_library)
 
-df_corr_structure <- data.frame()
+# initialize data frame
+df_corr <- data.frame()
 
-rTR <- data_lib$rTR
-
-for (current_model in c('mfeC', 'mfeT', 'efeC', 'efeT', 'accC', 'accT')) {
-  current_energy <- data_lib[, current_model]
-  p <- cor(rTR, current_energy, method = 'spearman')
-  R <- cor(rTR, current_energy, method = 'pearson')
+# loop through energies and calculate both p and R
+for (current_model in
+  c('mfeC', 'mfeT', 'efeC', 'efeT', 'accC', 'accT', 'GC_all')) {
+  p <- cor(data_lib$rTR, data_lib[, current_model], method = 'spearman')
+  R <- cor(data_lib$rTR, data_lib[, current_model], method = 'pearson')
   df_temp <- data.frame(
     model = current_model,
-    cor = c(p, R),
-    stat = c('p', 'R'))
-  df_corr_structure <- rbind(df_corr_structure, df_temp)
+    stat = c('p', 'R'),
+    cor = c(p, R))
+  df_corr <- rbind(df_corr, df_temp)
   print(current_model)
 }
 
-# calculate GC
-p <- cor(data_lib$rTR, data_lib$GC_all, method = 'spearman')
-R <- cor(data_lib$rTR, data_lib$GC_all, method = 'pearson')
-df_temp <- data.frame(
-  model = 'GC',
-  cor = c(p, R),
-  stat = c('p', 'R'))
+# calculate explainability as R/p^2 in %
+df_corr <- df_corr %>%
+  mutate(explainability = (cor^2)*100) %>%
+  mutate(stat2 = paste0(stat, 2))
 
-df_corr_structure <- rbind(df_temp, df_corr_structure)
-df_corr_structure$explainability <- (df_corr_structure$cor^2)*100
-
-# plot
-p <- ggplot(data = df_corr_structure,
-    aes(y = explainability, x = model, fill = stat)) +
-  geom_bar(position = 'dodge', stat = 'identity') +
-  scale_fill_discrete(name = '') +
-  scale_x_discrete('') +
-  scale_y_continuous('p2 / R2 (%)',
-    limits = c(0, 40), expand = c(0, 0)) +
+# generate plot
+p <- ggplot(data = df_corr,
+  aes(y = explainability, x = model, fill = stat2)) +
+  geom_bar(
+    position = 'dodge',
+    stat = 'identity',
+    color = 'black') +
+  scale_fill_manual(
+    name = '',
+    values = c('grey30', 'grey90')) +
+  scale_x_discrete(
+    name = '') +
+  scale_y_continuous(
+    name = 'p2 / R2 (%)',
+    limits = c(0, 40),
+    expand = c(0, 0)) +
   theme_SH() +
-  coord_flip(clip = 'off')
+  coord_flip(
+    clip = 'off')
 
+# save plot to file
 ggsave('Fig_03_A_folding.png', plot = p,
   width = 3, height = 3, units = c('in'), scale = 1)
 
@@ -71,19 +82,40 @@ ggsave('Fig_03_A_folding.png', plot = p,
 
 ############################# Fig. 3 B #############################
 ### scatter efeC ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 3 E: Scatter efeC of library ', current_library))
+
+# select data
 data_lib <- data %>%
-  filter(lib == 1)
+  filter(lib == current_library) %>%
+  select(seq, rTR, efeC)
+
+# print statement
+print(paste0(
+  'p = ', round(cor(data_lib$efeC, data_lib$rTR, method = 'spearman'), 3),
+  '; R = ', round(cor(data_lib$efeC, data_lib$rTR, method = 'pearson'), 3)))
 
 # plot data
 p <- ggplot(data_lib, aes(x = efeC, y = rTR)) +
-  geom_point(size = 0.3, alpha = 0.3) +
-  scale_x_continuous('efeC (kcal x mol-1)',
-    limits = c(-25, 0), expand = c(0, 0), breaks = seq(-25, 0, 5)) +
-  scale_y_continuous('rTR (-)', 
-    limits = c(0, 1), expand = c(0, 0)) +
+  geom_point(
+    size = 0.3,
+    alpha = 0.3) +
+  scale_x_continuous(
+    name = 'efeC (kcal x mol-1)',
+    limits = c(-25, 0),
+    breaks = seq(-25, 0, 5),
+    expand = c(0, 0)) +
+  scale_y_continuous(
+    name = 'rTR (-)', 
+    limits = c(0, 1),
+    expand = c(0, 0)) +
   theme_SH() +
-  coord_cartesian(clip = 'off')
+  coord_cartesian(
+    clip = 'off')
 
+# save plot to file
 ggsave('Fig_03_B_efeC.png', plot = p,
   width = 5, height = 5, units = c('in'), scale = 1)
 
@@ -91,22 +123,29 @@ ggsave('Fig_03_B_efeC.png', plot = p,
 
 ############################# Fig. 3 C #############################
 ### accC/accT scanning ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 3 C: scanning accC/accT of library ', current_library))
+
+# initialize data frame
 df_corr_acc <- data.frame()
 
+# loop through data frames and calculate correlation
 for (current_mode in c('accT', 'accC')) {
+  # read additional data
   df_wider <- read.table(paste0('./data/data_', current_mode, '_10.txt'),
       sep = '\t', header = T)
 
-  # add library
-  data_lib <- cbind(data, df_wider) %>% filter(lib == 1)
+  # add rTR
+  data_lib <- cbind(data, df_wider) %>%
+    filter(lib == current_library)
 
   # calculate correlation
-  rTR <- data_lib$rTR
-
   for (current_position in 1:71) {
     current_name <- paste0('X', current_position)
     current_acc <- data_lib[, current_name]
-    p <- cor(rTR, current_acc, method = 'spearman')
+    p <- cor(data_lib$rTR, current_acc, method = 'spearman')
     df_temp <- data.frame(
       pos = current_position,
       cor = p,
@@ -121,7 +160,7 @@ for (current_mode in c('accT', 'accC')) {
 # correct position and add center
 df_corr_acc$pos_corrected <- df_corr_acc$pos - 28 + 4.5
 
-# make points
+# generate plot
 p <- ggplot(df_corr_acc, aes(x = pos_corrected, y = cor, color = mode)) +
   geom_point(size = 2) +
   geom_line(size = 1) +
@@ -135,14 +174,21 @@ p <- ggplot(df_corr_acc, aes(x = pos_corrected, y = cor, color = mode)) +
     expand = c(0, 0), limits = c(0, -0.5), trans = 'reverse') +
   coord_cartesian(clip = 'off')
 
+# save plot to file
 ggsave('Fig_03_C_acc.png', plot = p,
   width = 5, height = 3, units = c('in'), scale = 1)
 
 
 
 ############################# Fig. 3 D #############################
-### hybridization scanning ###
-data_lib <- data %>% filter(lib == 1)
+### enrichment ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 3 E: Lineplot of library ', current_library))
+
+# select data
+data_lib <- data %>% filter(lib == current_library)
 
 # read hybridization
 scanning_energy <- read.table(paste0('./data/data_hybridization.txt'),
@@ -162,6 +208,7 @@ for (i in 1:n) {
   scanning_correlation <- rbind(scanning_correlation, df_temp)
 }
 
+# generate plot
 p <- ggplot(scanning_correlation, aes(x = pos+4, y = cor, fill = stat)) +
   geom_bar(position = 'dodge', stat = 'identity') +
   theme_SH() +
@@ -174,18 +221,25 @@ p <- ggplot(scanning_correlation, aes(x = pos+4, y = cor, fill = stat)) +
     expand = c(0, 0)) +
   coord_cartesian(clip = 'off')
 
+# save plot to file
 ggsave('Fig_03_D_hyb.png', plot = p,
   width = 3, height = 3, units = c('in'), scale = 1)
 
 
 
 ############################# Fig. 3 E #############################
-### random forest ###
+### enrichment ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 3 E: Lineplot of library ', current_library))
+
+# select data
 df_wider <- read.table('./data/data_accC_1.txt',
   sep = '\t', header = T)
 
 data_lib <- cbind(data, df_wider) %>%
-  filter(lib == 1) %>%
+  filter(lib == current_library) %>%
   select(seq, rTR, paste0('X', 1:80), hyb_opt,
     GC_all, mfeC, mfeT, efeC, efeT, accC, accT)
 
@@ -204,7 +258,7 @@ for (i in 1:ncol(df_one_hot)) {
   class(df_one_hot[, i]) <- 'integer'
 }
 
-# acombine
+# combine
 df_RF <- cbind(data_lib, df_one_hot) %>%
   select(-seq, -onehot)
 
@@ -238,6 +292,7 @@ test$predict <- as.data.frame(h2o.predict(rforest.model_cv, test.h2o))$predict
 # calculate correlation
 cor(test$rTR, test$predict, method = 'pearson')^2
 
+# generate plot
 p <- ggplot(test, aes(x = rTR, y = predict)) +
   geom_point(size = 0.3, alpha = 0.3) +
   ggtitle(paste0(R_model)) +
@@ -248,6 +303,7 @@ p <- ggplot(test, aes(x = rTR, y = predict)) +
   geom_smooth(method = 'lm', se = T, fullrange = F) +
   theme_SH()
 
+# save plot to file
 ggsave('03_RF_scatter.png', plot = p,
   width = 5, height = 5, units = c('in'), scale = 1)
 
@@ -303,6 +359,7 @@ varimp_all <- rbind(
 n <- 10
 labels <- head(varimp_all$Name, n)
 
+# generate plot
 p <- ggplot(data = head(varimp_all, n), aes(x = rev(Rank), y = Percentage * 100)) +
   geom_bar(stat = 'identity', fill = 'black') +
   scale_x_continuous('Ranked ', breaks =1:n, labels = rev(labels),
@@ -312,6 +369,7 @@ p <- ggplot(data = head(varimp_all, n), aes(x = rev(Rank), y = Percentage * 100)
   theme_SH() +
   coord_flip()
 
+# save plot to file
 ggsave('03_RF_features.png', plot = p,
   width = 3, height = 3, units = c('in'), scale = 1)
 
@@ -319,8 +377,14 @@ ggsave('03_RF_features.png', plot = p,
 
 ############################# Fig. 3 F #############################
 ### heatmap efeC and hyb_opt ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 3 E: Lineplot of library ', current_library))
+
+# select data
 data_lib <- data %>%
-  filter(lib == 1) %>%
+  filter(lib == current_library) %>%
   select(rTR, efeC, hyb_opt)
 
 # bin efeC
@@ -348,7 +412,7 @@ plot_data <- data_lib %>%
   group_by(bin_efeC, bin_hyb) %>%
   summarize(mean = mean(rTR))
 
-# plot
+# generate plot
 p <- ggplot(plot_data, aes(x = bin_efeC, y = bin_hyb, fill = mean)) + 
   geom_tile() +
   theme_SH() +
@@ -362,5 +426,6 @@ p <- ggplot(plot_data, aes(x = bin_efeC, y = bin_hyb, fill = mean)) +
     labels = c('<=-10', '>-10', '>-7.5', '>-5', '>-2.5', '>0')) +
   coord_cartesian(clip = 'off')
 
+# save plot to file
 ggsave('Fig_03_F_efeC_hyb.png', plot = p,
   width = 4, height = 3, units = c('in'), scale = 1)

@@ -6,6 +6,7 @@ setwd(ROOT_DIR)
 library(tidyverse)
 
 # read data
+print('Reading data ...')
 data <- read.table('./data/data_combined.txt',
   header = T,
   sep = '\t',
@@ -27,7 +28,13 @@ BASES <- c('A', 'C', 'G', 'U')
 
 ############################# Fig. 5 A #############################
 ### POI ###
-data_lib <- data %>% filter(lib == 1) %>% select(seq, rTR, efeC)
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 5 E: Lineplot of library ', current_library))
+
+# select data
+data_lib <- data %>% filter(lib == current_library) %>% select(seq, rTR, efeC)
 
 data_lib$U1 <- substring(data_lib$seq, 25, 25)
 data_lib$G1 <- substring(data_lib$seq, 26, 26)
@@ -35,6 +42,7 @@ data_lib$G1 <- substring(data_lib$seq, 26, 26)
 data_lib$UU <- data_lib$U1 == 'U'
 data_lib$GG <- data_lib$G1 == 'G'
 
+# generate plot
 p <- ggplot(data_lib, aes(x = GG, y = rTR)) +
   geom_violin(scale = 'width') +
   stat_summary(fun = mean, geom = 'point', size = 3) +
@@ -49,6 +57,7 @@ p <- ggplot(data_lib, aes(x = GG, y = rTR)) +
 ggsave('Fig_05_A1_rTR.png', plot = p, width = 3, height = 6,
   units = c('in'), scale = 1)
 
+# generate plot
 p <- ggplot(data_lib, aes(x = GG, y = efeC)) +
   geom_violin(scale = 'width') +
   stat_summary(fun = mean, geom = 'point', size = 3) +
@@ -58,6 +67,7 @@ p <- ggplot(data_lib, aes(x = GG, y = efeC)) +
   theme_SH() +
   coord_cartesian(clip = 'off')
 
+# save plot to file
 ggsave('Fig_05_A2_efeC.png', plot = p, width = 3, height = 3,
   units = c('in'), scale = 1)
 
@@ -69,8 +79,14 @@ t.test(data_lib$efeC[data_lib$GG], data_lib$efeC[!data_lib$GG])
 
 ############################# Fig. 5 B #############################
 ### relative triplet frequency CDS+6 ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 5 E: Lineplot of library ', current_library))
+
+# select data
 data_lib <- data %>%
-  filter(lib == 1) %>%
+  filter(lib == current_library) %>%
   select(seq, rTR)
 
 data_lib$CDS6 <- substring(data_lib$seq, 26, 26)
@@ -85,6 +101,7 @@ RSCU_arg <- data.frame(CDS6 = c('A', 'C', 'G', 'U'),
 
 data_plot <- merge(data_plot, RSCU_arg, by = 'CDS6')
 
+# generate plot
 p <- ggplot(data_plot, aes(x = RSCU, y = mean, color = CDS6)) +
   geom_point(size = 3) +
   theme_SH() +
@@ -95,6 +112,7 @@ p <- ggplot(data_plot, aes(x = RSCU, y = mean, color = CDS6)) +
     limits = c(0, 0.4), expand = c(0, 0)) +
   coord_cartesian(clip = 'off')
 
+# save plot to file
 ggsave('Fig_05_B_triplet.png', plot = p, width = 3, height = 3,
   units = c('in'), scale = 1)
 
@@ -102,7 +120,13 @@ ggsave('Fig_05_B_triplet.png', plot = p, width = 3, height = 3,
 
 ############################# Fig. 5 C #############################
 ### POI ###
-data_lib <- data %>% filter(lib == 1) %>% select(seq, rTR, efeC)
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 5 E: Lineplot of library ', current_library))
+
+# select data
+data_lib <- data %>% filter(lib == current_library) %>% select(seq, rTR, efeC)
 
 data_lib$U1 <- substring(data_lib$seq, 25, 25)
 data_lib$G1 <- substring(data_lib$seq, 26, 26)
@@ -110,7 +134,7 @@ data_lib$G1 <- substring(data_lib$seq, 26, 26)
 data_lib$UU <- data_lib$U1 == 'U'
 data_lib$GG <- data_lib$G1 == 'G'
 
-# make boxplots for rTR
+# generate plot
 p <- ggplot(data_lib, aes(x = UU, y = rTR)) +
   geom_violin(scale = 'width') +
   stat_summary(fun = mean, geom = 'point', size = 3) +
@@ -125,7 +149,7 @@ p <- ggplot(data_lib, aes(x = UU, y = rTR)) +
 ggsave('Fig_05_C1_rTR.png', plot = p, width = 3, height = 6,
   units = c('in'), scale = 1)
 
-# make boxplots for efeC
+# generate plot
 p <- ggplot(data_lib, aes(x = UU, y = efeC)) +
   geom_violin(scale = 'width') +
   stat_summary(fun = mean, geom = 'point', size = 3) +
@@ -134,6 +158,7 @@ p <- ggplot(data_lib, aes(x = UU, y = efeC)) +
     limits = c(-25, 0), expand = c(0, 0)) +
   theme_SH()
 
+# save plot to file
 ggsave('Fig_05_C2_efeC.png', plot = p, width = 3, height = 3,
   units = c('in'), scale = 1)
 
@@ -145,6 +170,12 @@ t.test(data_lib$rTR[data_lib$UU], data_lib$rTR[!data_lib$UU])
 
 ############################# Fig. 5 E #############################
 ### growth of E. coli ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 5 E: Lineplot of library ', current_library))
+
+# select data
 df_growth <- read.table('./data/data_OD_tRNA.txt',
   header = T, sep = "\t", fill = T)
 
@@ -155,6 +186,7 @@ data_plot <- df_growth %>%
   summarize(mean = mean(value, na.rm = T), sd = sd(value, na.rm = T)) %>%
   ungroup()
 
+# generate plot
 p <- ggplot(data_plot, aes(x = Plasmid, y = mean)) + 
   geom_bar(position = "dodge", stat = "identity") +
   geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd), width = .2) +
@@ -166,6 +198,7 @@ p <- ggplot(data_plot, aes(x = Plasmid, y = mean)) +
     breaks = seq(0, 60, by = 10),
     expand = c(0, 0))
 
+# save plot to file
 ggsave('Fig_05_E_growth.png', plot = p,
   width = 3, height = 3, units = c("in"), scale = 1)
 
@@ -173,8 +206,14 @@ ggsave('Fig_05_E_growth.png', plot = p,
 
 ############################# Fig. 5 G #############################
 ### single base effects of tRNA ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 5 E: Lineplot of library ', current_library))
+
+# select data
 # filter variants that occur in original data set
-temp <- data %>% filter(lib == 1) %>% select(-lib) 
+temp <- data %>% filter(lib == current_library) %>% select(-lib) 
 data_tRNA <- data_tRNA %>%
   inner_join(., temp, by = 'seq')
 
@@ -215,6 +254,7 @@ for (current_genotype in c('WT', 'KO')) {
 df_tRNA <- df_tRNA %>%
   mutate(FC = log2(has/not))
 
+# generate plot
 p <- ggplot(df_tRNA, aes(x = tRNA, y = FC, fill = UTR)) + 
   geom_bar(position = 'dodge', stat = 'identity') +
   labs(x = 'tRNAfMet pos. 37', y = 'effect on rTR (log2 FC)') +
@@ -224,6 +264,7 @@ p <- ggplot(df_tRNA, aes(x = tRNA, y = FC, fill = UTR)) +
   facet_wrap(~genotype, nrow = 1) +
   coord_cartesian(clip = 'off')
 
+# save plot to file
 ggsave('Fig_05_G_positions.png', plot = p,
   width = 6, height = 3, units = c('in'), scale = 1)
 
@@ -231,8 +272,14 @@ ggsave('Fig_05_G_positions.png', plot = p,
 
 ############################# Fig. 5 H #############################
 ### complementarity ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 5 E: Lineplot of library ', current_library))
+
+# select data
 # filter variants that occur in original data set
-temp <- data %>% filter(lib == 1) %>% select(-lib) 
+temp <- data %>% filter(lib == current_library) %>% select(-lib) 
 data_tRNA <- data_tRNA %>%
   inner_join(., temp, by = 'seq')
 
@@ -276,6 +323,7 @@ df_mean <- df_combined %>%
   group_by(comp, genotype) %>%
   summarize(mean = mean(logFC), sd = sd(logFC))
 
+# generate plot
 p <- ggplot(df_mean, aes(x = comp, y = mean)) +
   geom_bar(position = 'dodge', stat = 'identity', color = 'black') +
   geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd), width = 0.2, position = position_dodge(.9)) +
@@ -293,5 +341,6 @@ p <- ggplot(df_mean, aes(x = comp, y = mean)) +
   coord_cartesian(
     clip = 'off')
 
+# save plot to file
 ggsave('Fig_05_H_comp.pdf', plot = p,
   width = 4, height = 3, units = c('in'), scale = 1)

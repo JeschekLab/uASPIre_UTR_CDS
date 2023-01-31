@@ -10,6 +10,7 @@ library(caret)
 library(h2o)
 
 # read data
+print('Reading data ...')
 data <- read.table('./data/data_combined.txt',
   header = T,
   sep = '\t',
@@ -24,7 +25,13 @@ data <- read.table('./data/data_combined.txt',
 
 ############################# Fig. 4 B #############################
 ### UTR and CDS ###
+### enrichment ###
 
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 4 E: Lineplot of library ', current_library))
+
+# select data
 ### calculate for lib_comb1 ###
 data_lib <- data %>% filter(lib == 2)
 
@@ -207,7 +214,7 @@ data_plot4 <- data_lib %>% filter(lib == 4) %>% select(FC_UTR, FC_CDS) %>% resha
 data_plot <- rbind(data_plot2, data_plot3, data_plot4)
 class(data_plot$lib) <- 'character'
 
-# plot
+# generate plot
 p <- ggplot(data_plot, aes(x = lib, y = abs(value), fill = variable, color = variable)) +
   geom_violin(scale = 'width') +
   stat_summary(fun = mean, geom = 'point', size = 2) +
@@ -217,6 +224,7 @@ p <- ggplot(data_plot, aes(x = lib, y = abs(value), fill = variable, color = var
     limits = c(0, 4), expand = c(0, 0)) +
   coord_cartesian(clip = 'off')
 
+# save plot to file
 ggsave('Fig_04_B_violins.png', plot = p,
   width = 3, height = 3, units = c('in'), scale = 1)
 
@@ -224,6 +232,12 @@ ggsave('Fig_04_B_violins.png', plot = p,
 
 ############################# Fig. 4 C #############################
 ### ANOVA of effects ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 4 E: Lineplot of library ', current_library))
+
+# select data
 aov_pools <- list()
 for (current_pool in 1:10) {
   pool_x <- data_fact %>% filter(pool == current_pool)
@@ -245,6 +259,7 @@ aov_pools_combined <- as.data.frame(rbindlist(aov_pools))
 aov_combined <- aov_pools_combined %>% group_by(effect) %>%
   summarize(mean = mean(rel), sd = sd(rel))
 
+# generate plot
 p <- ggplot(aov_combined, aes(x = effect, y = mean, fill = effect)) + 
   geom_bar(stat = 'identity', colour = 'black') +
   geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd), width = .2) +
@@ -254,14 +269,21 @@ p <- ggplot(aov_combined, aes(x = effect, y = mean, fill = effect)) +
     limits = c(0, 0.65), expand = c(0, 0)) +
   theme(legend.position = 'none') +
   coord_cartesian(clip = 'off')
-  
+
+# save plot to file
 ggsave('Fig_04_C_anova.png', plot = p,
   width = 3, height = 3, units = c('in'), scale = 1)
 
 
 
 ############################# Fig. 4 D #############################
-### effect size CAI and tAI ### 
+### effect size CAI and tAI ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 4 E: Lineplot of library ', current_library))
+
+# select data
 df_corr_CAI <- data.frame()
 
 for (current_lib in 1:4) {
@@ -286,7 +308,7 @@ for (current_lib in 1:4) {
 df_corr_CAI$explainability <- (df_corr_CAI$cor^2)*100
 class(df_corr_CAI$lib) <- 'integer'
 
-# plot
+# generate plot
 p <- ggplot(data = df_corr_CAI, aes(y = explainability, x = lib, fill = stat)) +
   geom_bar(position = 'dodge', stat = 'identity') +
   scale_x_continuous('') +
@@ -298,13 +320,20 @@ p <- ggplot(data = df_corr_CAI, aes(y = explainability, x = lib, fill = stat)) +
   coord_flip(clip = 'off') +
   facet_wrap(~model)
 
+# save plot to file
 ggsave('Fig_04_D_CAI_tAI.png', plot = p,
   width = 3, height = 3, units = c('in'), scale = 1)
 
 
 
 ############################# Fig. 4 E #############################
-### bin CAI and tAI ### 
+### bin CAI and tAI ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 4 E: Lineplot of library ', current_library))
+
+# select data
 data_lib <- data %>% select(rTR, CAI, tAI, efeC)
 
 cutoff <- 0.10
@@ -324,7 +353,7 @@ temp1 <- data_plot %>% select(rTR, label) %>% mutate(group = 'rTR') %>% rename('
 temp2 <- data_plot %>% select(efeC_norm, label) %>% mutate(group = 'efeC') %>% rename('value' = 'efeC_norm')
 temp3 <- rbind(temp1, temp2)
 
-# make boxplots
+# generate plot
 p <- ggplot(temp3, aes(x = label, y = value, fill = group, color = group)) +
   geom_violin(scale = 'width') +
   stat_summary(fun = mean, geom = 'point', size = 3) +
@@ -335,6 +364,7 @@ p <- ggplot(temp3, aes(x = label, y = value, fill = group, color = group)) +
   theme_SH() +
   coord_cartesian(clip = 'off')
 
+# save plot to file
 ggsave('Fig_04_E_CAI_efeC.png', plot = p,
   width = 4, height = 3, units = c('in'), scale = 1)
 
@@ -348,6 +378,12 @@ t.test(CAI_10$efeC, CAI_90$efeC, alternative = 'greater') # -7.29 vs. -7.21, 1.3
 
 ############################# Fig. 4 F #############################
 ### ANOVA and linear model ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 4 E: Lineplot of library ', current_library))
+
+# select data
 data_lib <- data
 
 model <- lm(data = data_lib, formula = rTR ~ efeC + CAI + tAI)
@@ -360,7 +396,7 @@ model_aov$SOS_rel <- round(model_aov$SOS / sum(model_aov$SOS) * 100, 5)
 temp_plot <- model_aov[-4, ]
 temp_plot$rel <- (temp_plot$SOS_rel / sum(temp_plot$SOS_rel)) * 100
 
-# plot
+# generate plot
 p <- ggplot(data = temp_plot, aes(x = name, y = SOS_rel)) +
   geom_bar(position = 'dodge', stat = 'identity', fill = 'grey3') +
   # geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd), width = .2) +
@@ -370,6 +406,7 @@ p <- ggplot(data = temp_plot, aes(x = name, y = SOS_rel)) +
   theme_SH() +
   coord_cartesian(clip = 'off')
 
+# save plot to file
 ggsave('Fig_04_F_efeC_CAI_tAI.png', plot = p,
   width = 3, height = 3, units = c('in'), scale = 1)
 
@@ -377,10 +414,16 @@ ggsave('Fig_04_F_efeC_CAI_tAI.png', plot = p,
 
 ############################# Fig. 4 G #############################
 ### random forest ###
+
+# set library and make print statement
+current_library <- 1
+print(paste0('Figure 4 E: Lineplot of library ', current_library))
+
+# select data
 df_wider <- read.table(paste0('./data/data_accC_1.txt'),
   sep = '\t', header = T)
 
-data_lib <- cbind(data, df_wider) %>% filter(lib == 1) %>%
+data_lib <- cbind(data, df_wider) %>% filter(lib == current_library) %>%
   select(seq, rTR, paste0('X', 1:80), hyb_opt,
     GC_all, mfeT, mfeC, efeT, efeC, accT, accC, CAI, tAI)
 
@@ -477,6 +520,7 @@ t.test(df_cor_RF %>% filter(name == 'RF_noFold') %>% .$R2,
 df_cor_RF_combined <- df_cor_RF %>% group_by(name) %>%
   summarize(mean = mean(R2), sd = sd(R2))
 
+# generate plot
 p <- ggplot(df_cor_RF_combined, aes(x = name, y = mean, fill = name)) + 
   geom_bar(stat = 'identity', colour = 'black') +
   geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd), width = .2) +
@@ -487,5 +531,6 @@ p <- ggplot(df_cor_RF_combined, aes(x = name, y = mean, fill = name)) +
   theme(legend.position = 'none') +
   coord_cartesian(clip = 'off')
 
+# save plot to file
 ggsave('Fig_04_G_RF.png', plot = p,
   width = 3, height = 3, units = c('in'), scale = 1)
