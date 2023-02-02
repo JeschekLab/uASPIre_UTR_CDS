@@ -28,13 +28,13 @@ data <- read.table(
 ### UTR and CDS ###
 ### enrichment ###
 
+### calculate for lib_comb1 ###
 # set library and make print statement
-current_library <- 1
-print(paste0('Figure 4 E: Lineplot of library ', current_library))
+current_library <- 2
+print(paste0('Figure 4 B: UTR-CDS of library ', current_library))
 
 # select data
-### calculate for lib_comb1 ###
-data_lib <- data %>% filter(lib == 2)
+data_lib <- data %>% filter(lib == current_library)
 
 # table UTRs and CDSs and give them an ID
 UTRs <- data_lib %>%
@@ -58,8 +58,14 @@ data_lib <- data_lib %>%
 # add to data_comb
 data_comb <- data_lib
 
+
 ### calculate for lib_comb2 ###
-data_lib <- data %>% filter(lib == 3)
+# set library and make print statement
+current_library <- 3
+print(paste0('Figure 4 B: UTR-CDS of library ', current_library))
+
+# select data
+data_lib <- data %>% filter(lib == current_library)
 
 # table UTRs and CDSs and give them an ID
 UTRs <- data_lib %>%
@@ -87,12 +93,21 @@ data_comb <- rbind(data_comb, data_lib)
 data_comb$comb <- data_comb$mean_CDS + data_comb$mean_UTR
 
 ### calculate for lib_fact ###
-data_lib <- data %>% filter(lib == 4)
+# set library and make print statement
+current_library <- 4
+print(paste0('Figure 4 B: UTR-CDS of library ', current_library))
 
-# read pool data
-pools <- read.table('./data/data_pools_lib_fact.txt',
-  header = T, sep = '\t', colClasses = c('character', 'integer'))
+# select data
+data_lib <- data %>% filter(lib == current_library)
 
+# read sanger sequencing
+pools <- read.table(
+  file = './data/data_pools_lib_fact.txt',
+  header = T,
+  sep = '\t',
+  colClasses = c('character', 'integer'))
+
+# extract variable positions
 pools$seq <- paste0(
   substring(pools$full, 1, 25),
   substring(pools$full, 31, 31),
@@ -111,8 +126,8 @@ pools$seq <- paste0(
   substring(pools$full, 70, 70),
   substring(pools$full, 73, 73))
 
-# check if pools are correct
-pools$corrects <- pools$seq %in% data$seq
+# check if Sanger reads are in NGS data
+pools$correct <- pools$seq %in% data$seq
 
 # table UTRs and CDSs and give them an ID
 UTRs <- data_lib %>% group_by(UTR) %>%
@@ -208,42 +223,58 @@ data_lib <- rbind(temp1, temp2)
 data_lib$FC_CDS <- log2(data_lib$rTR / data_lib$mean_UTR)
 data_lib$FC_UTR <- log2(data_lib$rTR / data_lib$mean_CDS)
 
-data_plot2 <- data_lib %>% filter(lib == 2) %>% select(FC_UTR, FC_CDS) %>% reshape2::melt() %>% mutate(lib = 2)
-data_plot3 <- data_lib %>% filter(lib == 3) %>% select(FC_UTR, FC_CDS) %>% reshape2::melt() %>% mutate(lib = 3)
-data_plot4 <- data_lib %>% filter(lib == 4) %>% select(FC_UTR, FC_CDS) %>% reshape2::melt() %>% mutate(lib = 4)
-
-data_plot <- rbind(data_plot2, data_plot3, data_plot4)
-class(data_plot$lib) <- 'character'
+# make long format
+data_plot <- data_lib %>%
+  select(seq, lib, FC_UTR, FC_CDS) %>%
+    pivot_longer(
+      cols = c(-seq, -lib),
+      names_to = 'variable',
+      values_to = 'value') %>%
+    mutate(lib = as.character(lib))
 
 # generate plot
-p <- ggplot(data_plot, aes(x = lib, y = abs(value), fill = variable, color = variable)) +
-  geom_violin(scale = 'width') +
-  stat_summary(fun = mean, geom = 'point', size = 2) +
+p <- ggplot(data_plot,
+  aes(x = lib, y = abs(value), fill = variable)) +
+  geom_violin(
+    scale = 'width') +
+  stat_summary(
+    fun = mean,
+    geom = 'point',
+    size = 2) +
   theme_SH() +
-  scale_x_discrete('') +
-  scale_y_continuous('rel. rTR change (abs. log2 FC)',
-    limits = c(0, 4), expand = c(0, 0)) +
-  coord_cartesian(clip = 'off')
+  scale_x_discrete(
+    name = '') +
+  scale_y_continuous(
+    name = 'rel. rTR change (abs. log2 FC)',
+    limits = c(0, 4),
+    expand = c(0, 0)) +
+  scale_fill_manual(
+    name = '',
+    values = c('grey30', 'grey90')) +
+  coord_cartesian(
+    clip = 'off')
 
 # save plot to file
-ggsave('Fig_04_B_violins.pdf', plot = p,
-  width = 3, height = 3, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  file = 'Fig_04_B_violins.pdf',
+  width = 3,
+  height = 3)
 
 
 
 ############################# Fig. 4 C #############################
 ### ANOVA of effects ###
 
-# set library and make print statement
-current_library <- 1
-print(paste0('Figure 4 E: Lineplot of library ', current_library))
+# make print statement
+print(paste0('Figure 4 C: ANOVA of library ', current_library))
 
 # select data
 aov_pools <- list()
 for (current_pool in 1:10) {
   pool_x <- data_fact %>% filter(pool == current_pool)
 
-  # res.aov <- aov(data = pool_x, formula = rTR~mean_UTR+mean_CDS)
+  # make linear model
   mod.lm <- lm(data = pool_x, formula = rTR~mean_UTR+mean_CDS)
   res.aov <- Anova(mod.lm, type = 'II')
 
@@ -257,23 +288,37 @@ for (current_pool in 1:10) {
 aov_pools_combined <- as.data.frame(rbindlist(aov_pools))
 
 # make bar plots
-aov_combined <- aov_pools_combined %>% group_by(effect) %>%
+aov_combined <- aov_pools_combined %>%
+  group_by(effect) %>%
   summarize(mean = mean(rel), sd = sd(rel))
 
 # generate plot
 p <- ggplot(aov_combined, aes(x = effect, y = mean, fill = effect)) + 
-  geom_bar(stat = 'identity', colour = 'black') +
+  geom_bar(
+    stat = 'identity',
+    colour = 'black') +
   geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd), width = .2) +
   theme_SH() +
-  scale_x_discrete('') +
-  scale_y_continuous('contribution to rTR variance (%)',
-    limits = c(0, 0.65), expand = c(0, 0)) +
-  theme(legend.position = 'none') +
-  coord_cartesian(clip = 'off')
+  scale_x_discrete(
+    name = '') +
+  scale_y_continuous(
+    name = 'contribution to rTR variance (%)',
+    limits = c(0, 0.65),
+    expand = c(0, 0)) +
+  theme(
+    legend.position = 'none') +
+  scale_fill_manual(
+    name = '',
+    values = c('grey30', 'grey90', 'white')) +
+  coord_cartesian(
+    clip = 'off')
 
 # save plot to file
-ggsave('Fig_04_C_anova.pdf', plot = p,
-  width = 3, height = 3, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  file = 'Fig_04_C_anova.pdf',
+  width = 3,
+  height = 3)
 
 
 
@@ -281,14 +326,16 @@ ggsave('Fig_04_C_anova.pdf', plot = p,
 ### effect size CAI and tAI ###
 
 # set library and make print statement
-current_library <- 1
-print(paste0('Figure 4 E: Lineplot of library ', current_library))
+print(paste0('Figure 4 D: CAI/tAI'))
 
 # select data
 df_corr_CAI <- data.frame()
 
+# loop through library and calculate effect sizes of CAI and tAI
 for (current_lib in 1:4) {
-  data_lib <- data %>% filter(lib == current_lib) %>% select(rTR, tAI, CAI)
+  data_lib <- data %>%
+    filter(lib == current_lib) %>%
+    select(rTR, tAI, CAI)
 
   rTR <- data_lib$rTR
 
@@ -310,20 +357,33 @@ df_corr_CAI$explainability <- (df_corr_CAI$cor^2)*100
 class(df_corr_CAI$lib) <- 'integer'
 
 # generate plot
-p <- ggplot(data = df_corr_CAI, aes(y = explainability, x = lib, fill = stat)) +
-  geom_bar(position = 'dodge', stat = 'identity') +
-  scale_x_continuous('') +
-  scale_y_continuous('p2 / R2 (%)',
+p <- ggplot(data = df_corr_CAI,
+    aes(y = explainability, x = lib, fill = stat)) +
+  geom_bar(
+    position = 'dodge',
+    stat = 'identity',
+    color = 'black') +
+  scale_x_reverse(
+    name = '') +
+  scale_y_continuous(
+    name = 'p2 / R2 (%)',
     limits = c(0, 1.2),
     breaks = seq(0, 1.2, 0.4),
-    expand = c(0, 0)) +
+    expand = c(0, 0),
+    ) +
   theme_SH() +
   coord_flip(clip = 'off') +
-  facet_wrap(~model)
+  facet_wrap(~model) +
+  scale_fill_manual(
+    name = '',
+    values = c('grey30', 'grey90'))
 
 # save plot to file
-ggsave('Fig_04_D_CAI_tAI.pdf', plot = p,
-  width = 3, height = 3, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  file = 'Fig_04_D_CAI_tAI.pdf',
+  width = 3,
+  height = 3)
 
 
 
@@ -331,44 +391,76 @@ ggsave('Fig_04_D_CAI_tAI.pdf', plot = p,
 ### bin CAI and tAI ###
 
 # set library and make print statement
-current_library <- 1
-print(paste0('Figure 4 E: Lineplot of library ', current_library))
+print(paste0('Figure 4 E: low CAI/tAI'))
 
 # select data
-data_lib <- data %>% select(rTR, CAI, tAI, efeC)
+data_lib <- data %>%
+  select(rTR, CAI, tAI, efeC)
 
 cutoff <- 0.10
 
 # bin CAI
-CAI_10 <- data_lib %>% filter(CAI <= cutoff) %>% mutate(label = 'CAI_10')
-CAI_90 <- data_lib %>% filter(CAI > cutoff) %>% mutate(label = 'CAI_90')
+CAI_10 <- data_lib %>%
+  filter(CAI <= cutoff) %>%
+  mutate(label = 'CAI_10')
+CAI_90 <- data_lib %>%
+  filter(CAI > cutoff) %>%
+  mutate(label = 'CAI_90')
 
 # bin tAI
-tAI_10 <- data_lib %>% filter(tAI <= cutoff) %>% mutate(label = 'tAI_10') 
-tAI_90 <- data_lib %>% filter(tAI > cutoff) %>% mutate(label = 'tAI_90')
+tAI_10 <- data_lib %>%
+  filter(tAI <= cutoff) %>%
+  mutate(label = 'tAI_10') 
+tAI_90 <- data_lib %>%
+  filter(tAI > cutoff) %>%
+  mutate(label = 'tAI_90')
 
+# combine
 data_plot <- rbind(CAI_10, CAI_90, tAI_10, tAI_90)
 data_plot$efeC_norm <- data_plot$efeC / -25
 
-temp1 <- data_plot %>% select(rTR, label) %>% mutate(group = 'rTR') %>% rename('value' = 'rTR')
-temp2 <- data_plot %>% select(efeC_norm, label) %>% mutate(group = 'efeC') %>% rename('value' = 'efeC_norm')
-temp3 <- rbind(temp1, temp2)
+# make long format
+data_plot <- data_plot %>%
+  select(rTR, label, efeC_norm) %>%
+    pivot_longer(
+      cols = -label,
+      names_to = 'group',
+      values_to = 'value')
 
 # generate plot
-p <- ggplot(temp3, aes(x = label, y = value, fill = group, color = group)) +
-  geom_violin(scale = 'width') +
-  stat_summary(fun = mean, geom = 'point', size = 3) +
-  scale_y_continuous('rTR (-)',
-    limits = c(0, 1.1), expand = c(0,0),
+p <- ggplot(data_plot, aes(x = label, y = value, fill = group, color = group)) +
+  geom_violin(
+    scale = 'width',
+    color = 'black') +
+  stat_summary(
+    fun = mean,
+    geom = 'point',
+    size = 2) +
+  scale_x_discrete(
+    name = '') +
+  scale_y_continuous(
+    name = 'rTR (-)',
+    limits = c(0, 1.1),
+    expand = c(0,0),
     breaks = seq(0, 1, 0.2),
     sec.axis = sec_axis(~.*-25, name = 'efeC')) +
   theme_SH() +
-  coord_cartesian(clip = 'off')
+  coord_cartesian(clip = 'off') +
+  scale_color_manual(
+    name = '',
+    values = c('grey30', 'grey90')) +
+  scale_fill_manual(
+    name = '',
+    values = c('grey30', 'grey90'))
 
 # save plot to file
-ggsave('Fig_04_E_CAI_efeC.pdf', plot = p,
-  width = 4, height = 3, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  'Fig_04_E_CAI_efeC.pdf',
+  width = 4,
+  height = 3)
 
+# make test statistic
 t.test(CAI_10$rTR, CAI_90$rTR) # 0.213 vs. 0.217, 1.00e-12
 t.test(tAI_10$rTR, tAI_90$rTR) # 0.296 vs. 0.216, 6.67e-226
 
@@ -381,12 +473,12 @@ t.test(CAI_10$efeC, CAI_90$efeC, alternative = 'greater') # -7.29 vs. -7.21, 1.3
 ### ANOVA and linear model ###
 
 # set library and make print statement
-current_library <- 1
-print(paste0('Figure 4 E: Lineplot of library ', current_library))
+print(paste0('Figure 4 F: ANOVA of CAI/tAI'))
 
 # select data
 data_lib <- data
 
+# make linear model
 model <- lm(data = data_lib, formula = rTR ~ efeC + CAI + tAI)
 
 model_aov <- as.data.frame(Anova(model, type = 'II')[1])
@@ -399,17 +491,26 @@ temp_plot$rel <- (temp_plot$SOS_rel / sum(temp_plot$SOS_rel)) * 100
 
 # generate plot
 p <- ggplot(data = temp_plot, aes(x = name, y = SOS_rel)) +
-  geom_bar(position = 'dodge', stat = 'identity', fill = 'grey3') +
-  # geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd), width = .2) +
-  scale_x_discrete('') +
-  scale_y_continuous('contribution to rTR variance (%)', expand = c(0, 0),
+  geom_bar(
+    position = 'dodge',
+    stat = 'identity',
+    fill = 'grey90',
+    color = 'black') +
+  scale_x_discrete(
+    name = '') +
+  scale_y_continuous(
+    name = 'contribution to rTR variance (%)',
+    expand = c(0, 0),
     limits = c(0, 15)) +
   theme_SH() +
   coord_cartesian(clip = 'off')
 
 # save plot to file
-ggsave('Fig_04_F_efeC_CAI_tAI.pdf', plot = p,
-  width = 3, height = 3, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  file = 'Fig_04_F_efeC_CAI_tAI.pdf',
+  width = 3,
+  height = 3)
 
 
 
@@ -418,13 +519,15 @@ ggsave('Fig_04_F_efeC_CAI_tAI.pdf', plot = p,
 
 # set library and make print statement
 current_library <- 1
-print(paste0('Figure 4 E: Lineplot of library ', current_library))
+print(paste0('Figure 4 G: Feature importance of library ', current_library))
 
-# select data
+# read accC data
 df_wider <- read.table(paste0('./data/data_accC_1.txt'),
   sep = '\t', header = T)
 
-data_lib <- cbind(data, df_wider) %>% filter(lib == current_library) %>%
+# combine with data and select only library 1
+data_lib <- cbind(data, df_wider) %>%
+  filter(lib == current_library) %>%
   select(seq, rTR, paste0('X', 1:80), hyb_opt,
     GC_all, mfeT, mfeC, efeT, efeC, accT, accC, CAI, tAI)
 
@@ -457,6 +560,7 @@ df_cor_RF <- data.frame()
 # initialize h20 cluster
 h2o.init()
 
+# loop through seeds and train random forest
 for (current_replicate in 1:5) {
   current_seed <- seeds[current_replicate]
 
@@ -481,14 +585,26 @@ for (current_replicate in 1:5) {
     as.h2o(.)
 
   # train
-  RF <- h2o.randomForest(y = y.dep, training_frame = train_RF.h2o,
-    nfolds = 10, seed = current_seed)
-  RF_CAI <- h2o.randomForest(y = y.dep, training_frame = train_RF_CAI.h2o,
-    nfolds = 10, seed = current_seed)
-  RF_noFold <- h2o.randomForest(y = y.dep, training_frame = train_RF_noFold.h2o,
-    nfolds = 10, seed = current_seed)
-  RF_noFold_CAI <- h2o.randomForest(y = y.dep, training_frame = train_RF_noFold_CAI.h2o,
-    nfolds = 10, seed = current_seed)
+  RF <- h2o.randomForest(
+    y = y.dep,
+    training_frame = train_RF.h2o,
+    nfolds = 10,
+    seed = current_seed)
+  RF_CAI <- h2o.randomForest(
+    y = y.dep,
+    training_frame = train_RF_CAI.h2o,
+    nfolds = 10,
+    seed = current_seed)
+  RF_noFold <- h2o.randomForest(
+    y = y.dep,
+    training_frame = train_RF_noFold.h2o,
+    nfolds = 10,
+    seed = current_seed)
+  RF_noFold_CAI <- h2o.randomForest(
+    y = y.dep,
+    training_frame = train_RF_noFold_CAI.h2o,
+    nfolds = 10,
+    seed = current_seed)
 
   # predict
   test.h2o <- test %>% as.h2o(.)
@@ -523,15 +639,28 @@ df_cor_RF_combined <- df_cor_RF %>% group_by(name) %>%
 
 # generate plot
 p <- ggplot(df_cor_RF_combined, aes(x = name, y = mean, fill = name)) + 
-  geom_bar(stat = 'identity', colour = 'black') +
+  geom_bar(
+    stat = 'identity',
+    colour = 'grey30') +
   geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd), width = .2) +
   theme_SH() +
-  scale_x_discrete('Models') +
-  scale_y_continuous('R2 on test set',
-    limits = c(0, 0.6), breaks = seq(0, 0.6, 0.2), expand = c(0, 0)) +
-  theme(legend.position = 'none') +
-  coord_cartesian(clip = 'off')
+  scale_x_discrete(
+    name = 'training features RF') +
+  scale_y_continuous(
+    name = 'R2 on test set (%)',
+    limits = c(0, 0.7),
+    breaks = seq(0, 0.6, 0.2),
+    expand = c(0, 0)) +
+  theme(
+    legend.position = 'none') +
+  coord_cartesian(
+    clip = 'off')
 
 # save plot to file
-ggsave('Fig_04_G_RF.pdf', plot = p,
-  width = 3, height = 3, units = c('in'), scale = 1)
+ggsave(
+  plot = p,
+  file = 'Fig_04_G_RF.pdf',
+  width = 3,
+  height = 3)
+
+# done!

@@ -122,7 +122,7 @@ p <- ggplot(data_lib, aes(x = efeC, y = rTR)) +
 # save plot to file
 ggsave(
   plot = p,
-  file = 'Fig_03_B_efeC.pdf',
+  file = 'Fig_03_B_efeC.png',
   width = 5,
   height = 5)
 
@@ -504,3 +504,5 @@ ggsave(
   file = 'Fig_03_F_efeC_hyb.pdf',
   width = 4,
   height = 3)
+
+# done!
