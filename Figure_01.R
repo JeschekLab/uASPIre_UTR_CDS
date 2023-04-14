@@ -1,4 +1,4 @@
-# set wd and load libraries
+# set wd
 ROOT_DIR <- '~/gitlab/uASPIre_UTR_CDS'
 setwd(ROOT_DIR)
 
