@@ -9,3 +9,5 @@ do
   printf "Executing script ${i} ...\n"
   Rscript "./Figure_0${i}.R"
 done
+
+# done!
